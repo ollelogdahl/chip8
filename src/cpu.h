@@ -31,7 +31,7 @@ extern byte memory[4096];   // 4K memory
 extern chip8registries cpu;
 
 static const unsigned PROGRAM_START_OFFSET = 0x200;
-static const unsigned FONTSET_START_OFFSET = 0x50;
+static const unsigned FONTSET_START_OFFSET = 0x000;
 static const unsigned STEPS_PER_CYCLE = 10;
 
 static const byte fontset[80] = {
