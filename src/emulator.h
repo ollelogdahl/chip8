@@ -34,7 +34,8 @@ void handleNativeEvents();
 
 bool isKeyPressed(byte k);
 // returns a pointer to the first key pressed. returns null if none.
-byte *getNextKeypress();
+// Returns the first key pressed by index. if no index pressed, return 255.
+byte getNextKeypress();
 
 void render_buffer();
 

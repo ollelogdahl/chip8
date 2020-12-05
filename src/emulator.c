@@ -98,7 +98,7 @@ void cycle() {
         if(!cpu.running) return;
 
         SDL_PumpEvents();
-        keyboard_state = SDL_GetKeyboardState(NULL);
+        keyboard_state = (char *)SDL_GetKeyboardState(NULL);
         cpu_process();
         SDL_Delay(2);
 
@@ -180,10 +180,10 @@ void handleNativeEvents() {
     }
 }
 
-byte *getNextKeypress() {
-    for(unsigned i = 0; i < 16; ++i)
+byte getNextKeypress() {
+    for(byte i = 0; i < 16; ++i)
         if(isKeyPressed(i)) return i;
-    return NULL;
+    return 255;
 }
 
 void clear_display() {
@@ -238,6 +238,6 @@ void load_key(byte reg) {
     // printf("LD V%x, K\n", reg);
 
     // halt until any key pressed
-    byte *pressed = getNextKeypress();
-    if (pressed != NULL) cpu.pc.WORD += 2;
+    byte pressed = getNextKeypress();
+    if (pressed != 255) cpu.pc.WORD += 2;
 }
