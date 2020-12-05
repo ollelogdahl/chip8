@@ -10,7 +10,7 @@
 
 // Macro for verbose printing. 0 = no prints, 1 = only info, etc.
 unsigned char cpu_verbosity;
-#define ERR(...) fprintf(stderr, __VA_ARGS__)
+#define ERR(...) printf(__VA_ARGS__)
 #define INFO(...) if(cpu_verbosity > 0) printf(__VA_ARGS__)
 #define LOG(...) if(cpu_verbosity > 1) printf(__VA_ARGS__)
 #define VERBOSE(...) if(cpu_verbosity > 2) printf(__VA_ARGS__)
@@ -74,7 +74,7 @@ int load_rom(const char *file) {
 
     FILE *f = fopen(file, "rb");    // read in binary mode
     if (f == NULL) {
-        ERR("\nCouldn't open %s (%s)", file, strerror(errno));
+        ERR("\nCouldn't open %s (%s)\n", file, strerror(errno));
         return 1;
     }
 
