@@ -97,7 +97,7 @@ void load_delay_set(byte reg);                  // Fx15 LD
 void load_sound_set(byte reg);                  // Fx18 LD
 void add_i(byte reg);                           // Fx1E ADD I, Vx
 void load_sprite(byte reg);                     // Fx29 LD F, Vx
-void load_bcd(byte reg);                        // Fx33 LD B, Vx
+void store_bcd(byte reg);                        // Fx33 LD B, Vx
 void copy_reg(byte reg);                        // Fx55 LD [I], Vx
 void read_reg(byte reg);                        // Fx65 LD Vx, [I]
 

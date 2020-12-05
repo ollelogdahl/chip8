@@ -91,7 +91,7 @@ void execute_opcode(word code) {
                 case 0x18: return load_sound_set(x);
                 case 0x1E: return add_i(x);
                 case 0x29: return load_sprite(x);
-                case 0x33: return load_bcd(x);
+                case 0x33: return store_bcd(x);
                 case 0x55: return copy_reg(x);
                 case 0x65: return read_reg(x);
             };
@@ -289,25 +289,25 @@ void load_sprite(byte reg) {
     cpu.pc.WORD += 2;
 }
 
-void load_bcd(byte reg) {
+void store_bcd(byte reg) {
     VERBOSE("LD B, V%x\n", reg);
-    memory[cpu.i.WORD] = cpu.v[reg] / 100;
-    memory[cpu.i.WORD+1] = (cpu.v[reg] / 10) % 10;
+    memory[cpu.i.WORD] = (cpu.v[reg] % 1000) / 100;
+    memory[cpu.i.WORD+1] = (cpu.v[reg] % 100) / 10;
     memory[cpu.i.WORD+2] = cpu.v[reg] % 10;
     cpu.pc.WORD += 2;
 }
 
 void copy_reg(byte reg) {
     VERBOSE("LD [I], V%x\n", reg);
-    for(unsigned x = 0; x < reg; ++x)
+    for(unsigned x = 0; x < reg + 1; ++x)
         memory[cpu.i.WORD + x] = cpu.v[x];
-    cpu.i.WORD = cpu.i.WORD + reg + 1;
+    cpu.i.WORD += reg + 1;
     cpu.pc.WORD += 2;
 }
 
 void read_reg(byte reg) {
     VERBOSE("LD V%x, [I]\n", reg);
-    for(unsigned x = 0; x < reg; ++x)
+    for(unsigned x = 0; x < reg + 1; ++x)
         cpu.v[x] = memory[cpu.i.WORD+x];
     cpu.i.WORD = cpu.i.WORD + reg + 1;
     cpu.pc.WORD += 2;
