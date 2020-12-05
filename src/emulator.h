@@ -21,7 +21,7 @@ static unsigned const PIXEL_SIZE = 12;
 static unsigned const BEEP_AMPLITUDE = 10;
 static unsigned const BEEP_FREQUENCY = 28000;
 
-int initialize_emulator();
+int initialize_emulator(unsigned char verbose_lvl);
 // Loads a rom into memory
 int load_rom(const char *file);
 

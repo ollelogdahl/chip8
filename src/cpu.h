@@ -53,7 +53,7 @@ static const byte fontset[80] = {
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void initialize_cpu();
+void initialize_cpu(unsigned char verbose_lvl);
 
 void cpu_process();
 void execute_opcode(word code);

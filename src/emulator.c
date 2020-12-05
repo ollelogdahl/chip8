@@ -8,6 +8,13 @@
 #include <stdio.h>
 #include <errno.h>
 
+// Macro for verbose printing. 0 = no prints, 1 = only info, etc.
+unsigned char cpu_verbosity;
+#define ERR(...) fprintf(stderr, __VA_ARGS__)
+#define INFO(...) if(cpu_verbosity > 0) printf(__VA_ARGS__)
+#define LOG(...) if(cpu_verbosity > 1) printf(__VA_ARGS__)
+#define VERBOSE(...) if(cpu_verbosity > 2) printf(__VA_ARGS__)
+
 SDL_Renderer *renderer;
 
 byte memory[4096];   // 4K memory
@@ -16,7 +23,6 @@ Uint8 *keyboard_state;
 
 // Contains screen data.
 bool screen_buffer[64 * 32];
-
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -29,9 +35,11 @@ bool screen_buffer[64 * 32];
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0')
 
-int initialize_emulator() {
+int initialize_emulator(unsigned char verbose_level) {
+    cpu_verbosity = verbose_level;
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        printf("SDL_Init error: %s", SDL_GetError());
+        ERR("SDL_Init error: %s", SDL_GetError());
         return 1;
     }
 
@@ -39,14 +47,14 @@ int initialize_emulator() {
     SDL_Window *win = SDL_CreateWindow("Chip8 Emulator - pacman", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                        64 * PIXEL_SIZE, 32 * PIXEL_SIZE, SDL_WINDOW_SHOWN);
     if (win == NULL) {
-        printf("SDL_CreateWindow error: %s", SDL_GetError());
+        ERR("SDL_CreateWindow error: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
     renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if(renderer == NULL) {
         SDL_DestroyWindow(win);
-        printf("SDL_CreateRenderer error: %s", SDL_GetError());
+        ERR("SDL_CreateRenderer error: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -54,19 +62,19 @@ int initialize_emulator() {
     SDL_SetRenderDrawColor(renderer, BG_R, BG_G, BG_B, 255);
     SDL_RenderClear(renderer);
 
-    printf("SDL Initialized.\n");
+    LOG("SDL Initialized.\n");
     return 0;
 }
 
 int load_rom(const char *file) {
     // load rom
-    printf("Loading rom %s...", file);
+    INFO("Loading rom %s...", file);
 
     const unsigned max_size = 0xE00;
 
     FILE *f = fopen(file, "rb");    // read in binary mode
     if (f == NULL) {
-        printf("\nCouldn't open %s (%s)", file, strerror(errno));
+        ERR("\nCouldn't open %s (%s)", file, strerror(errno));
         return 1;
     }
 
@@ -74,10 +82,10 @@ int load_rom(const char *file) {
     fseek(f, 0, SEEK_END);
     unsigned size = ftell(f);
     rewind(f);
-    printf(" [%u bytes]\n", size);
+    INFO(" [%u bytes]\n", size);
 
     if (size > max_size) {
-        printf("File size exceeds %u bytes. Can't load into memory.", max_size);
+        ERR("File size exceeds %u bytes. Can't load into memory.\n", max_size);
         return 1;
     }
 
@@ -108,7 +116,7 @@ void cycle() {
     if(cpu.dt > 0) cpu.dt--;
     if(cpu.st > 0) {
         cpu.st--;
-        // play beep
+        // TODO: play beep.
     }
 }
 
@@ -187,7 +195,7 @@ byte getNextKeypress() {
 }
 
 void clear_display() {
-    // printf("CLS\n");
+    VERBOSE("CLS\n");
     memset(screen_buffer, 0, sizeof(screen_buffer));
     cpu.pc.WORD += 2;
 
@@ -195,7 +203,7 @@ void clear_display() {
 }
 
 void draw(byte x, byte y, byte nib) {
-    // printf("DRW V%x, V%x, 0x%01x\n", x, y, nib);
+    VERBOSE("DRW V%x, V%x, 0x%01x\n", x, y, nib);
 
     // set collision flag
     cpu.v[0xF] = 0;
@@ -223,19 +231,19 @@ void draw(byte x, byte y, byte nib) {
 }
 
 void skip_if_key(byte reg) {
-    // printf("SKP V%x\n", reg);
+    VERBOSE("SKP V%x\n", reg);
     if (isKeyPressed(cpu.v[reg])) cpu.pc.WORD += 2;
     cpu.pc.WORD += 2;
 }
 
 void skip_if_not_key(byte reg) {
-    // printf("SKNP V%x\n", reg);
+    VERBOSE("SKNP V%x\n", reg);
     if (!isKeyPressed(cpu.v[reg])) cpu.pc.WORD += 2;
     cpu.pc.WORD += 2;
 }
 
 void load_key(byte reg) {
-    // printf("LD V%x, K\n", reg);
+    VERBOSE("LD V%x, K\n", reg);
 
     // halt until any key pressed
     byte pressed = getNextKeypress();
